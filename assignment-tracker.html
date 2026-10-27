@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Assignment Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      background: #F0F4FF;
+      color: #1f2328;
+    }
+
+    /* ── Header ── */
+    header {
+      background: #001A66;
+      color: #fff;
+      padding: 28px 40px;
+    }
+    header h1 {
+      font-size: 1.9rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    header p {
+      font-size: 0.9rem;
+      font-weight: 400;
+      opacity: 0.75;
+      margin-top: 2px;
+    }
+
+    /* ── Main layout ── */
+    main {
+      max-width: 860px;
+      margin: 36px auto;
+      padding: 0 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    /* ── Cards grid ── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    /* ── Shared card ── */
+    .card {
+      border-radius: 14px;
+      padding: 28px 24px;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .card__icon  { font-size: 1.8rem; line-height: 1; }
+    .card__label { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.85; }
+    .card__number { font-size: 3rem; font-weight: 800; line-height: 1.1; }
+
+    /* ── Card color variants ── */
+    .card--deepblue { background: #0039B3; }
+    .card--blue     { background: #0057FF; }
+    .card--orange   { background: #FF6B00; }
+
+    /* ── Checklist section ── */
+    .checklist {
+      background: #fff;
+      border-radius: 14px;
+      padding: 28px 28px 24px;
+      border: 1px solid #e5e7eb;
+    }
+    .checklist h2 {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #001A66;
+      margin-bottom: 18px;
+    }
+
+    .checklist__list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .checklist__item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      background: #F0F4FF;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #1f2328;
+      transition: background 0.15s;
+      user-select: none;
+    }
+    .checklist__item:hover { background: #e3eaff; }
+
+    .checklist__item input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: #0057FF;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* Submitted state */
+    .checklist__item--done {
+      background: #eef2ff;
+      color: #9ca3af;
+      text-decoration: line-through;
+    }
+    .checklist__item--done:hover { background: #e0e7ff; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>My Assignment Tracker</h1>
+    <p>Student Submission Tracker</p>
+  </header>
+
+  <main>
+
+    <!-- Cards -->
+    <div class="cards-grid">
+
+      <section class="card card--deepblue">
+        <span class="card__icon">🎓</span>
+        <span class="card__label">Total Students</span>
+        <span class="card__number" id="count-total">0</span>
+      </section>
+
+      <section class="card card--blue">
+        <span class="card__icon">✅</span>
+        <span class="card__label">Submitted</span>
+        <span class="card__number" id="count-submitted">0</span>
+      </section>
+
+      <section class="card card--orange">
+        <span class="card__icon">⏳</span>
+        <span class="card__label">Not Submitted</span>
+        <span class="card__number" id="count-not-submitted">0</span>
+      </section>
+
+    </div>
+
+    <!-- Checklist -->
+    <section class="checklist">
+      <h2>📋 Student Submission Checklist</h2>
+      <ul class="checklist__list" id="checklist-list"></ul>
+    </section>
+
+  </main>
+
+  <script>
+    // ── Data ──────────────────────────────────────────────
+    const DATA = {
+      students: [
+        { name: "Aina",    submitted: false },
+        { name: "Ben",     submitted: false },
+        { name: "Chandra", submitted: false },
+        { name: "Devi",    submitted: false },
+        { name: "Farid",   submitted: false }
+      ]
+    };
+
+    // ── DOM refs ─────────────────────────────────────────
+    const elTotal    = document.getElementById('count-total');
+    const elSubmit   = document.getElementById('count-submitted');
+    const elNotSub   = document.getElementById('count-not-submitted');
+    const elList     = document.getElementById('checklist-list');
+
+    // ── renderCards: recomputes all three counts from DATA ─
+    function renderCards() {
+      const total     = DATA.students.length;
+      const submitted = DATA.students.filter(s => s.submitted).length;
+      const notSub    = DATA.students.filter(s => !s.submitted).length;
+
+      elTotal.textContent  = total;
+      elSubmit.textContent = submitted;
+      elNotSub.textContent = notSub;
+    }
+
+    // ── renderChecklist: builds list items once on load ───
+    function renderChecklist() {
+      elList.innerHTML = '';
+      DATA.students.forEach(function(student, index) {
+        const li    = document.createElement('li');
+        const label = document.createElement('label');
+        const cb    = document.createElement('input');
+
+        cb.type    = 'checkbox';
+        cb.checked = student.submitted;
+
+        label.className = 'checklist__item' + (student.submitted ? ' checklist__item--done' : '');
+        label.appendChild(cb);
+        label.appendChild(document.createTextNode(student.name));
+
+        // Toggle logic: mutate DATA, update class, refresh cards
+        cb.addEventListener('change', function() {
+          DATA.students[index].submitted = cb.checked;
+          if (cb.checked) {
+            label.classList.add('checklist__item--done');
+          } else {
+            label.classList.remove('checklist__item--done');
+          }
+          renderCards();
+        });
+
+        li.appendChild(label);
+        elList.appendChild(li);
+      });
+    }
+
+    // ── Init ─────────────────────────────────────────────
+    renderChecklist();
+    renderCards();
+  </script>
+
+</body>
+</html>
